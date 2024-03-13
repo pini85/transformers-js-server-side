@@ -1,95 +1,45 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+
+import { useState } from "react";
 
 export default function Home() {
+  // Keep track of the classification result and the model loading status.
+  const [result, setResult] = useState(null);
+  const [ready, setReady] = useState(null);
+
+  const classify = async (text) => {
+    if (!text) return;
+    if (ready === null) setReady(false);
+
+    // Make a request to the /classify route on the server.
+    const result = await fetch(`/classify?text=${encodeURIComponent(text)}`);
+
+    // If this is the first time we've made a request, set the ready flag.
+    if (!ready) setReady(true);
+
+    const json = await result.json();
+    setResult(json);
+  };
   return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          Get started by editing&nbsp;
-          <code className={styles.code}>src/app/page.js</code>
-        </p>
-        <div>
-          <a
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className={styles.vercelLogo}
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+    <main className="flex min-h-screen flex-col items-center justify-center p-12">
+      <h1 className="text-5xl font-bold mb-2 text-center">Transformers.js</h1>
+      <h2 className="text-2xl mb-4 text-center">
+        Using transformers js in the server
+      </h2>
+      <input
+        type="text"
+        className="w-full max-w-xs p-2 border border-gray-300 rounded mb-4"
+        placeholder="Enter text here"
+        onInput={(e) => {
+          classify(e.target.value);
+        }}
+      />
 
-      <div className={styles.center}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
-
-      <div className={styles.grid}>
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Docs <span>-&gt;</span>
-          </h2>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Learn <span>-&gt;</span>
-          </h2>
-          <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-        </a>
-
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Templates <span>-&gt;</span>
-          </h2>
-          <p>Explore starter templates for Next.js.</p>
-        </a>
-
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className={styles.card}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2>
-            Deploy <span>-&gt;</span>
-          </h2>
-          <p>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
+      {ready !== null && (
+        <pre className="bg-gray-100 p-2 rounded">
+          {!ready || !result ? "Loading..." : JSON.stringify(result, null, 2)}
+        </pre>
+      )}
     </main>
   );
 }
